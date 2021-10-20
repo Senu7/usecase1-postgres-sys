@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="getCustomerDetails" doc:id="e9b2b8a3-c353-432c-b9bb-a392eccb7d24" >
+		<db:select doc:name="Select" doc:id="dc4ffac5-e740-4aa3-90d0-4fbfa97b0a1e" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from customer where custid = :custid]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{'custid': attributes.queryParams.custId}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="6136247c-7650-47d8-809a-25bd69cc6f62" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[output application/json
+---
+[{
+"Account Id": payload[0].custid,
+"First Name": payload[0].custfirstname,
+"Last Name": payload[0].custlastname,
+"Email": payload[0].custemail,
+"Phone": payload[0].custphone
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="a0372ed2-b9c7-4776-b890-b23fbf4950e7" message="#[payload]"/>
+	</flow>
+	<flow name="addNewCustomer" doc:id="85916b65-93f5-4f20-bbc8-e6b9e56f473c" >
+		<db:select doc:name="Select" doc:id="f0eb4a50-3382-416f-94f4-5881df4e19bb" config-ref="Database_Config" target="exists" targetValue="#[(sizeOf(payload as Array) &gt; 0)]">
+			<db:sql ><![CDATA[select * from customer where custid = :custid]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{'custid': payload.accountId}]]]></db:input-parameters>
+		</db:select>
+		<choice doc:name="Choice" doc:id="d947a9fc-a1ab-4ba3-843d-d2299b5e7c97" >
+			<when expression="#[not (vars.exists)]">
+				<db:insert doc:name="Insert" doc:id="ae42408e-5313-43a1-a8d4-4bd81e04ecdd" config-ref="Database_Config">
+					<db:sql ><![CDATA[insert into customer(custid,custfirstname,custlastname,custphone,custemail) values(:custid,:custfirstname,:custlastname,:custphone,:custemail)]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{custid : payload.accountId, custfirstname : payload.firstname, 
+ custlastname : payload.lastname, custphone : payload.phone,
+ custemail : payload.email
+}]]]></db:input-parameters>
+				</db:insert>
+				<ee:transform doc:name="Transform Message" doc:id="cad9f7f0-7e34-4555-963c-6a6511f91bd1" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "customer created for customerId"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="2d5d0de3-cf13-42a6-ad75-b4de84b32780" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "Customer already exist"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="b32dae6b-d35c-438e-96bb-5c8953749174" message="#[payload]"/>
+	</flow>
+	<flow name="updateCustomer" doc:id="4cb0a1b0-2a6a-4daf-b14b-6f764e875ec4" >
+		<db:select doc:name="Select" doc:id="12b1b026-9ba9-44df-a60d-cc1687004666" config-ref="Database_Config" target="exists" targetValue="#[(sizeOf(payload as Array) &gt; 0)]" >
+			<db:sql ><![CDATA[select * from customer where custid = :custid]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{'custid': payload.accountId}]]]></db:input-parameters>
+		</db:select>
+		<choice doc:name="Copy_of_Choice" doc:id="54aa7b3d-432c-41e3-a94d-c48dd85d2600" >
+			<when expression="#[vars.exists]" >
+				<db:update doc:name="Update" doc:id="eac4508d-0644-4bbf-a1d5-49d4483ddb1d" config-ref="Database_Config">
+					<db:sql ><![CDATA[UPDATE customer SET custfirstname = :custfirstname, custlastname = :custlastname, custphone = :custphone,
+custemail = :custemail WHERE custid = :custid]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{custid : payload.accountId, custfirstname : payload.firstname, 
+ custlastname : payload.lastname, custphone : payload.phone,
+ custemail : payload.email
+}]]]></db:input-parameters>
+				</db:update>
+				<ee:transform doc:name="Transform Message" doc:id="17bdee41-59ab-4b0e-b5fb-6aa31b75e61b" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "customer updated for customerId"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="4a6f4b1f-67e3-4e61-a58f-e1c282ed24d0" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "Customer doesn't exist"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="6cd673ec-31a4-441b-8875-cdd8789ef565" message="#[payload]" />
+	</flow>
+</mule>

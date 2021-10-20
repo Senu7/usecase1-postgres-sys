@@ -1,0 +1,8 @@
+http:
+  port: "8081"
+  
+db:
+  host: "jdbc:postgresql://satao.db.elephantsql.com:5432/juytjyzq"
+  driver: "org.postgresql.Driver"
+  user: "juytjyzq"
+  password: "59SyAywL3u0El9SjFSN1EKxDe-3BeqLB"

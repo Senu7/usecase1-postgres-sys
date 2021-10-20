@@ -1,0 +1,11 @@
+%dw 2.0
+
+type auto_85916b65_93f5_4f20_bbc8_e6b9e56f473c_Input_Payload = {
+  custfirstname: String, 
+  custphone: String, 
+  custlastname: String, 
+  custId: String, 
+  custemail: String, 
+  _?: Any
+}
+
