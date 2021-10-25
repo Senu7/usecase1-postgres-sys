@@ -16,11 +16,11 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 				<ee:set-payload ><![CDATA[output application/json
 ---
 [{
-"Account Id": payload[0].custid,
+"Customer Id": payload[0].custid,
 "First Name": payload[0].custfirstname,
 "Last Name": payload[0].custlastname,
-"Email": payload[0].custemail,
-"Phone": payload[0].custphone
+"Email Address": payload[0].custemail,
+"Phone No": payload[0].custphone
 }]]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
@@ -29,15 +29,15 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 	<flow name="addNewCustomer" doc:id="85916b65-93f5-4f20-bbc8-e6b9e56f473c" >
 		<db:select doc:name="Select" doc:id="f0eb4a50-3382-416f-94f4-5881df4e19bb" config-ref="Database_Config" target="exists" targetValue="#[(sizeOf(payload as Array) &gt; 0)]">
 			<db:sql ><![CDATA[select * from customer where custid = :custid]]></db:sql>
-			<db:input-parameters ><![CDATA[#[{'custid': payload.accountId}]]]></db:input-parameters>
+			<db:input-parameters ><![CDATA[#[{'custid': payload.custId}]]]></db:input-parameters>
 		</db:select>
 		<choice doc:name="Choice" doc:id="d947a9fc-a1ab-4ba3-843d-d2299b5e7c97" >
 			<when expression="#[not (vars.exists)]">
 				<db:insert doc:name="Insert" doc:id="ae42408e-5313-43a1-a8d4-4bd81e04ecdd" config-ref="Database_Config">
 					<db:sql ><![CDATA[insert into customer(custid,custfirstname,custlastname,custphone,custemail) values(:custid,:custfirstname,:custlastname,:custphone,:custemail)]]></db:sql>
-					<db:input-parameters ><![CDATA[#[{custid : payload.accountId, custfirstname : payload.firstname, 
- custlastname : payload.lastname, custphone : payload.phone,
- custemail : payload.email
+					<db:input-parameters ><![CDATA[#[{custid : payload.custId, custfirstname : payload.firstName, 
+ custlastname : payload.lastName, custphone : payload.phoneNo,
+ custemail : payload.emailAddress
 }]]]></db:input-parameters>
 				</db:insert>
 				<ee:transform doc:name="Transform Message" doc:id="cad9f7f0-7e34-4555-963c-6a6511f91bd1" >
@@ -69,16 +69,16 @@ output application/json
 	<flow name="updateCustomer" doc:id="4cb0a1b0-2a6a-4daf-b14b-6f764e875ec4" >
 		<db:select doc:name="Select" doc:id="12b1b026-9ba9-44df-a60d-cc1687004666" config-ref="Database_Config" target="exists" targetValue="#[(sizeOf(payload as Array) &gt; 0)]" >
 			<db:sql ><![CDATA[select * from customer where custid = :custid]]></db:sql>
-			<db:input-parameters ><![CDATA[#[{'custid': payload.accountId}]]]></db:input-parameters>
+			<db:input-parameters ><![CDATA[#[{'custid': payload.custId}]]]></db:input-parameters>
 		</db:select>
-		<choice doc:name="Copy_of_Choice" doc:id="54aa7b3d-432c-41e3-a94d-c48dd85d2600" >
+		<choice doc:name="Choice" doc:id="54aa7b3d-432c-41e3-a94d-c48dd85d2600" >
 			<when expression="#[vars.exists]" >
 				<db:update doc:name="Update" doc:id="eac4508d-0644-4bbf-a1d5-49d4483ddb1d" config-ref="Database_Config">
 					<db:sql ><![CDATA[UPDATE customer SET custfirstname = :custfirstname, custlastname = :custlastname, custphone = :custphone,
 custemail = :custemail WHERE custid = :custid]]></db:sql>
-					<db:input-parameters ><![CDATA[#[{custid : payload.accountId, custfirstname : payload.firstname, 
- custlastname : payload.lastname, custphone : payload.phone,
- custemail : payload.email
+					<db:input-parameters ><![CDATA[#[{custid : payload.custId, custfirstname : payload.firstName, 
+ custlastname : payload.lastName, custphone : payload.phoneNo,
+ custemail : payload.emailAddress
 }]]]></db:input-parameters>
 				</db:update>
 				<ee:transform doc:name="Transform Message" doc:id="17bdee41-59ab-4b0e-b5fb-6aa31b75e61b" >

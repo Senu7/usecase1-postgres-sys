@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd ">
-    <apikit:config name="systemapi_postgres-config" api="resource::054f94b9-f703-43ce-a240-88e278a0d47f:systemapi_postgres:1.0.1:raml:zip:systemapi_postgres.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <apikit:config name="systemapi_postgres-config" api="resource::054f94b9-f703-43ce-a240-88e278a0d47f:systemapi_postgres:1.0.3:raml:zip:systemapi_postgres.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <flow name="systemapi_postgres-main">
         <http:listener path="/api/*" config-ref="HTTP_Listener_config">
             <http:response statusCode="#[vars.httpStatus default 200]">
@@ -121,7 +121,7 @@ output application/json
         </error-handler>
     </flow>
     <flow name="put:\customer:application\json:systemapi_postgres-config">
-        <flow-ref doc:name="Flow Reference" doc:id="742e02fe-ea01-4b69-9fc2-33a24e83a51d" name="updateCustomer"/>
+        <flow-ref doc:name="Flow Reference" doc:id="742e02fe-ea01-4b69-9fc2-33a24e83a51d" name="updateCustomer" />
     </flow>
     <flow name="get:\customer:systemapi_postgres-config">
         <flow-ref doc:name="Flow Reference" doc:id="bb3f1cd7-19aa-4fa2-9d6a-d63ab735fb4a" name="getCustomerDetails" />
